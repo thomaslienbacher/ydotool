@@ -45,6 +45,7 @@ static void show_help() {
 		"  -r, --repeat=N             Repeat entire sequence N times\n"
 		"  -D, --next-delay=N         Delay N milliseconds between input events (up/down, "
 		"                               a complete click means doubled time)\n"
+		"  -P, --press-release        Press & release mouse button to complete a click, (optional)\n"
 		"  -h, --help                 Display this help and exit\n"
 		"\n"
 		"How to specify buttons:\n"
@@ -77,6 +78,7 @@ int tool_click(int argc, char **argv) {
 
 	int repeats = 1;
 	int next_delay_ms = 25;
+	bool press_release = 0;
 
 	while (1) {
 		int c;
@@ -84,13 +86,14 @@ int tool_click(int argc, char **argv) {
 		static struct option long_options[] = {
 			{"repeat", required_argument, 0, 'r'},
 			{"next-delay", required_argument, 0, 'D'},
+			{"press-release", no_argument, 0, 'P'},
 			{"help", no_argument, 0, 'h'},
 			{0, 0, 0, 0}
 		};
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "hr:D:",
+		c = getopt_long (argc, argv, "hPr:D:",
 				 long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -113,6 +116,10 @@ int tool_click(int argc, char **argv) {
 
 			case 'D':
 				next_delay_ms = strtol(optarg, NULL, 10);
+				break;
+			
+			case 'P':
+				press_release = 1;
 				break;
 
 			case 'h':
@@ -137,6 +144,14 @@ int tool_click(int argc, char **argv) {
 			while (optind < argc) {
 				int key = strtol(argv[optind++], NULL, 16);
 				int keycode = (key & 0xf) | 0x110;
+
+				if (press_release) {
+					printf("Click Event %d\n", i);
+					uinput_emit(EV_KEY, keycode, 1, 1);
+					uinput_emit(EV_KEY, keycode, 0, 1);
+					usleep(next_delay_ms * 1000);
+					continue;
+				}
 
 				if (key & 0x40) {
 					uinput_emit(EV_KEY, keycode, 1, 1);
