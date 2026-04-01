@@ -42,7 +42,7 @@ Currently implemented command(s):
 - `debug` - Print the socket, number of parameters and parameter values
 - `bakers` - Show the honorable bakers
 - `stdin` - Sends the key presses as it was a keyboard (i.e from ssh) See [PR #229](https://github.com/ReimuNotMoe/ydotool/pull/229)
-- `interkeystroke` - Used to send deterministic random keystrokes every 1 - 2 seconds
+- `random` - Used to send deterministic random keystrokes every 1 - 2 seconds
 
 ## Examples
 Switch to tty1 (Ctrl+Alt+F1), wait 2 seconds, and type some words:
