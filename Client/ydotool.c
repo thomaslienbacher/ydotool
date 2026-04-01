@@ -78,6 +78,7 @@ static const struct tool_def tool_list[] = {
 	{"debug",     tool_debug},
 	{"bakers",    tool_bakers},
 	{"stdin",     tool_stdin},
+	{"random",    tool_random},
 };
 
 static void show_help() {
