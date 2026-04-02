@@ -112,7 +112,7 @@ static void type_char(char c)
     }
     uinput_emit(EV_KEY, kc, 1, 1);
 
-    // 20 ms
+    // 1 ms
     usleep(1 * 1000);
 
     uinput_emit(EV_KEY, kc, 0, 1);
