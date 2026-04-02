@@ -13,10 +13,12 @@ if (${RC_GIT_VER} EQUAL 0)
     string(STRIP ${GIT_VERSION} GIT_VERSION)
     message("-- Version: " ${GIT_VERSION})
     add_definitions(-DVERSION=\"${GIT_VERSION}\")
-endif()
+endif ()
 
 set(SOURCE_FILES_DAEMON Daemon/ydotoold.c)
-set(SOURCE_FILES_CLIENT Client/ydotool.c Client/tool_click.c Client/tool_mousemove.c Client/tool_type.c Client/tool_key.c Client/tool_stdin.c Client/tool_random.c)
+set(SOURCE_FILES_CLIENT Client/ydotool.c Client/tool_click.c Client/tool_mousemove.c
+        Client/tool_type.c Client/tool_key.c Client/tool_stdin.c Client/tool_random.c
+        Client/tool_replay.c)
 
 add_executable(ydotoold ${SOURCE_FILES_DAEMON})
 install(TARGETS ydotoold DESTINATION ${CMAKE_INSTALL_BINDIR})

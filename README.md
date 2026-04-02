@@ -43,6 +43,7 @@ Currently implemented command(s):
 - `bakers` - Show the honorable bakers
 - `stdin` - Sends the key presses as it was a keyboard (i.e from ssh) See [PR #229](https://github.com/ReimuNotMoe/ydotool/pull/229)
 - `random` - Used to send deterministic random keystrokes every 1 - 2 seconds
+- `replay` - Used to replay keystrokes recorded with a keylogger
 
 ## Examples
 Switch to tty1 (Ctrl+Alt+F1), wait 2 seconds, and type some words:

@@ -70,3 +70,4 @@ extern int tool_type(int argc, char **argv);
 extern int tool_key(int argc, char **argv);
 extern int tool_stdin(int argc, char **argv);
 extern int tool_random(int argc, char **argv);
+extern int tool_replay(int argc, char **argv);
