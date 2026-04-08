@@ -84,8 +84,8 @@ static const int32_t ascii2keycode_map[128] = {
 static void show_help()
 {
     puts(
-        "Usage: replay [OPTION]... RECORDING_FILE\n"
-        "Replays a keylogger recording, file format is a CSV with header TIMESTAMP_NS;KEY\n"
+        "Usage: replay [OPTION]... RECORDING_FILE ACTUAL_FILE\n"
+        "Replays a keylogger recording, file format is a CSV with header TIMESTAMP_NS;KEY. It produces tha actual keylog files due to minimum time between keystrokes.\n"
         "\n"
         "Options:");
 
@@ -93,7 +93,6 @@ static void show_help()
         "  -h, --help                 Display this help and exit\n"
     );
 }
-
 
 static void type_char(char c)
 {
@@ -168,9 +167,28 @@ int parse_recording(char* recording_file, logentry_t* log, size_t log_count)
     return rows;
 }
 
+void save_actual_keystrokes(char* actual_file, logentry_t* log, size_t log_count)
+{
+    FILE* actual = fopen(actual_file, "w");
+    if (actual == NULL)
+    {
+        fprintf(stderr, "Cannot open file '%s' error = (%s)\n", actual_file, strerror(errno));
+        exit(1);
+    }
+
+    fprintf(actual, "TIMESTAMP_NS;KEY\n");
+
+    for (size_t i = 0; i < log_count; i++)
+    {
+        fprintf(actual, "%lu;%c\n", log[i].timestamp_ns, log[i].key);
+    }
+
+    fclose(actual);
+}
+
 int tool_replay(int argc, char** argv)
 {
-    if (argc < 2)
+    if (argc < 3)
     {
         show_help();
         return 0;
@@ -221,11 +239,12 @@ int tool_replay(int argc, char** argv)
         }
     }
 
-    if (optind == argc - 1)
+    if (optind == argc - 2)
     {
         char* csv_file = argv[optind++];
         printf("Reading recording from `%s`\n", csv_file);
         logentry_t* entries = calloc(1000, sizeof(logentry_t));
+        logentry_t* actuals = calloc(1000, sizeof(logentry_t));
         if (entries == NULL)
         {
             fprintf(stderr, "Cannot allocate memory for entries %s\n", strerror(errno));
@@ -235,11 +254,12 @@ int tool_replay(int argc, char** argv)
         int num_entries = parse_recording(csv_file, entries, 1000);
         printf("Parsed %d entries\n", num_entries);
 
-
         int i = 0;
         for (; i < num_entries - 1; i++)
         {
             __time_t start = get_timestamp_ns();
+            actuals[i].key = entries[i].key;
+            actuals[i].timestamp_ns = start;
             type_char(entries[i].key);
             __time_t end = get_timestamp_ns();
             __time_t needed = entries[i + 1].timestamp_ns - entries[i].timestamp_ns;
@@ -259,8 +279,19 @@ int tool_replay(int argc, char** argv)
             nanosleep(&next, NULL);
         }
 
+        __time_t now = get_timestamp_ns();
+        actuals[i].key = entries[i].key;
+        actuals[i].timestamp_ns = now;
         type_char(entries[i].key);
 
+        char* actual_file = argv[optind++];
+        save_actual_keystrokes(actual_file, actuals, i + 1);
+
+        __time_t total_time_ns = actuals[i].timestamp_ns - actuals[0].timestamp_ns;
+        double total_time_s = total_time_ns / 1e9;
+        printf("key strokes per second = %.2f\n", (i + 1) / total_time_s);
+
+        free(actuals);
         free(entries);
     }
     else
